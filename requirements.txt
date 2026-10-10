@@ -1,0 +1,13 @@
+# Python 3.12 (coqui-tts supports 3.10–3.13). Install:
+#   uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -r requirements.txt
+fastapi>=0.115
+uvicorn[standard]>=0.30
+python-multipart>=0.0.9
+httpx>=0.27
+soundfile>=0.12
+numpy>=1.26
+# free local engine (XTTS-v2)
+coqui-tts>=0.27
+torch>=2.2
+torchaudio>=2.2
+transformers>=4.57,<5

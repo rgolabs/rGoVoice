@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>rGoVoice</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="logo">◉</span> rGoVoice <span class="sub">clone a voice, then let it speak</span></div>
+  <div class="topbar-actions">
+    <span id="engine-badges" class="badges"></span>
+    <button id="btn-settings" class="btn ghost" title="Settings">⚙ Settings</button>
+  </div>
+</header>
+
+<main class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-head">
+      <h2>Voices</h2>
+      <button id="btn-new-voice" class="btn primary small">+ New</button>
+    </div>
+    <ul id="voice-list" class="voice-list"></ul>
+    <p id="voice-empty" class="muted hidden">No voices yet. Create one to get started.</p>
+  </aside>
+
+  <section id="voice-panel" class="panel hidden">
+    <div class="voice-head">
+      <div>
+        <h1 id="v-name" contenteditable="true" spellcheck="false" title="Click to rename"></h1>
+        <div class="voice-meta">
+          <label>Language
+            <select id="v-language"></select>
+          </label>
+          <input id="v-description" placeholder="Description (optional)">
+          <span id="v-created" class="muted"></span>
+        </div>
+      </div>
+      <button id="btn-delete-voice" class="btn danger ghost">Delete voice</button>
+    </div>
+
+    <!-- 1. Samples -->
+    <section class="card">
+      <div class="card-head">
+        <h3>1 · Reference samples <span id="sample-total" class="pill"></span></h3>
+        <span class="muted">Clean speech, no music, one speaker. 30 s to 2 min total is the sweet spot.</span>
+      </div>
+      <div class="sample-tools">
+        <div class="recorder">
+          <button id="btn-record" class="btn record">● Record</button>
+          <span id="rec-timer" class="timer">0:00</span>
+          <div class="meter"><div id="rec-level"></div></div>
+        </div>
+        <label class="btn ghost file-btn">⬆ Upload audio
+          <input id="file-input" type="file" accept="audio/*,.wav,.mp3,.m4a,.ogg,.flac,.webm" multiple hidden>
+        </label>
+      </div>
+      <details class="script">
+        <summary>Need something to read? Open a sample script</summary>
+        <p>Hi, this is a short recording to capture how my voice sounds. I'm speaking at a natural pace, the way I would in a normal conversation.
+        I'll vary my tone a little: a question here and there? A pause now and then. Some excitement, some calm.
+        Numbers help too: one, two, three, four, five, six, seven, eight, nine, ten. The quick brown fox jumps over the lazy dog.
+        Thanks for listening, and that should be enough to get a good clone.</p>
+      </details>
+      <ul id="sample-list" class="sample-list"></ul>
+    </section>
+
+    <!-- 2. Train -->
+    <section class="card">
+      <div class="card-head"><h3>2 · Train the voice</h3>
+        <span class="muted">Train on either engine, or both. Same samples, pick per request later.</span></div>
+      <div id="engine-cards" class="engine-cards"></div>
+    </section>
+
+    <!-- 3. Speak -->
+    <section class="card">
+      <div class="card-head"><h3>3 · Text to speech</h3></div>
+      <div class="speak-grid">
+        <div class="speak-left">
+          <textarea id="speak-text" rows="6" maxlength="5000" placeholder="Type what the voice should say…"></textarea>
+          <div class="row between">
+            <span id="speak-count" class="muted">0 / 5000</span>
+            <button id="btn-speak" class="btn primary">▶ Generate speech</button>
+          </div>
+          <div id="speak-result" class="result hidden">
+            <audio id="speak-audio" controls></audio>
+            <a id="speak-download" class="btn ghost small" download>⬇ Download</a>
+            <span id="speak-info" class="muted"></span>
+          </div>
+        </div>
+        <div class="speak-right">
+          <label>Engine
+            <select id="speak-engine"></select>
+          </label>
+          <label>Language
+            <select id="speak-language"></select>
+          </label>
+          <div id="speak-options"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h3>History</h3></div>
+      <ul id="output-list" class="output-list"></ul>
+      <p id="output-empty" class="muted">Nothing generated yet.</p>
+    </section>
+  </section>
+
+  <section id="welcome" class="panel welcome">
+    <h1>Welcome to rGoVoice</h1>
+    <p>Create a voice, record or upload a minute of speech, train it on a <b>free local model (XTTS-v2)</b> or the <b>paid ElevenLabs API</b>, then type anything and hear it in that voice.</p>
+    <ol>
+      <li>Click <b>+ New</b> to create a voice profile.</li>
+      <li>Record with your mic or upload clean audio files.</li>
+      <li>Press <b>Train</b> on the engine you want to use.</li>
+      <li>Type text and generate. Every result is saved in the history.</li>
+    </ol>
+  </section>
+</main>
+
+<!-- Settings dialog -->
+<dialog id="dlg-settings">
+  <form method="dialog" class="dialog-body">
+    <h2>Settings</h2>
+    <h4>ElevenLabs (paid engine)</h4>
+    <p class="muted">Get a key at elevenlabs.io → Profile → API keys. Instant voice cloning needs the Starter plan or higher. The key is stored locally in <code>data/settings.json</code>.</p>
+    <div class="row">
+      <input id="el-key" type="password" placeholder="xi-… API key" autocomplete="off" style="flex:1">
+      <button id="btn-save-key" class="btn primary" type="button">Save</button>
+      <button id="btn-clear-key" class="btn ghost" type="button">Clear</button>
+    </div>
+    <div class="row"><span id="el-key-status" class="muted"></span>
+      <button id="btn-check-el" class="btn ghost small" type="button">Check connection</button></div>
+    <pre id="el-check" class="muted small-pre"></pre>
+    <h4>XTTS-v2 (free local engine)</h4>
+    <p id="xtts-status" class="muted"></p>
+    <div class="row end"><button class="btn" value="close">Close</button></div>
+  </form>
+</dialog>
+
+<!-- New voice dialog -->
+<dialog id="dlg-new">
+  <form method="dialog" class="dialog-body" id="form-new">
+    <h2>New voice</h2>
+    <label>Name <input id="new-name" required maxlength="80" placeholder="e.g. RJ – narration"></label>
+    <label>Language <select id="new-language"></select></label>
+    <label>Description <input id="new-description" placeholder="optional"></label>
+    <div class="row end">
+      <button class="btn ghost" value="cancel" type="button" onclick="document.getElementById('dlg-new').close()">Cancel</button>
+      <button class="btn primary" value="ok" type="submit">Create</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="toast" class="toast hidden"></div>
+<script src="/static/app.js"></script>
+</body>
+</html>

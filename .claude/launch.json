@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "rgovoice",
+      "runtimeExecutable": "./run.sh",
+      "runtimeArgs": [],
+      "port": 8765
+    }
+  ]
+}
